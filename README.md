@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Vesper — Architectural Lighting
 
-## Getting Started
-
-First, run the development server:
+A premium lighting storefront built from the *Premium Lighting Website Master Specification* (`docs/`). The reference images are in `docs/references/`.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # http://localhost:3000
+npm run build && npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Deploy
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The site is fully static-prerendered and needs no environment variables.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Vercel (recommended):** import the GitHub repository at vercel.com/new. The framework is detected as Next.js, and the default build (`next build`) and output settings need no changes.
+- **Any Node host:** run `npm ci && npm run build && npm start`. It needs Node 20.9 or later and serves on `PORT` (default 3000).
 
-## Learn More
+## Architecture
 
-To learn more about Next.js, take a look at the following resources:
+- **Next.js 16 (App Router) + React 19 + TypeScript + Tailwind 4 + Motion.** All 50 routes are prerendered statically.
+- **Product imagery** (`src/components/lamps/`): no product photography was supplied, so every fixture is a hand-built vector render with physically shaded material ramps (`materials.ts`). The renders are resolution-independent (sharp at 4K) and recolour per finish. They carry three light channels driven by CSS variables:
+  - `--lamp` is the bulb or source.
+  - `--ambient` is the light spilled into the room.
+  - `.lit` forces both on locally (used by the "After dark" gallery view, the Nocturne scenes and the switchable lamps on the homepage).
+- **Day/night engine** (`src/lib/environment.ts`, `src/components/env/EnvironmentProvider.tsx`): interpolates every colour token through Day → Early dusk → Dusk → Evening → Night (~3.4 s), then ignites the bulbs and ambient glow (total ≈ 4.3 s). It reverses in ≈ 3.5 s, can be interrupted mid-way and respects reduced motion. The chosen mode persists and is painted before hydration, so there is no flash.
+- **Design tokens** live in `src/app/globals.css`: colour (runtime-driven), type scale, spacing and motion easings/durations.
+- **Data** is in `src/lib/`: `products.ts`, `collections.ts`, `journal.ts`, `catalogue.ts` (filter/sort), `search.ts` and `shipping.ts`.
+- **Cart** state is an external store persisted to `localStorage` and synced across tabs. Checkout runs Information → Shipping → Payment → Review → Confirmation. It is a prototype: no payment is processed (test card `4242 4242 4242 4242`).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Routes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `/` — home
+- `/shop` and `/shop/[category]` — catalogue, with filters and sort kept in the URL
+- `/collections` and `/collections/[slug]`
+- `/product/[slug]`
+- `/cart` and `/checkout`
+- `/search?q=`
+- `/about`, `/journal`, `/journal/[slug]` and `/contact`
