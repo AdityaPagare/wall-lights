@@ -9,7 +9,7 @@ import { IconArrowLong } from "@/components/ui/Icons";
 import { collectionBySlug } from "@/lib/collections";
 import { JOURNAL } from "@/lib/journal";
 import { hasTag, productBySlug } from "@/lib/products";
-
+//productslug
 const pick = (s: string) => productBySlug(s)!;
 
 export default function Home() {

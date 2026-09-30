@@ -12,7 +12,7 @@ import { PRODUCTS, categoryBySlug, minPrice, nextProduct, productBySlug, related
 export function generateStaticParams() {
   return PRODUCTS.map((p) => ({ slug: p.slug }));
 }
-
+//products
 export async function generateMetadata(props: PageProps<"/product/[slug]">): Promise<Metadata> {
   const { slug } = await props.params;
   const p = productBySlug(slug);
